@@ -21,7 +21,11 @@ class AddressBook(UserDict):
         self.data.pop(name)
 
 
-class Name:
+class Field:
+    pass
+
+
+class Name(Field):
     def __init__(self, value):
         if not isinstance(value, str):
             raise ValueError("Value must be a string")
@@ -36,9 +40,14 @@ class Record:
         self.name = name
         self.phone = phone
 
+    def add_phone(self, record):
+        self.addphone = book.add_record(record)
 
-class Field:
-    pass
+    def change_phone(self, record):
+        self.addphone = book.add_record(record)
+
+    def delet_phone(self, record):
+        self.deletphone = book.delete_record(record)
 
 
 class Phone(Name):
@@ -65,7 +74,7 @@ def input_error(func):
 def add_record(command):
     if spliting_arguments(command):
         record = spliting_arguments(command)
-        book.add_record(record)
+        record.add_phone(record)
     else:
         return False
 
@@ -74,7 +83,8 @@ def add_record(command):
 def delete(command):
     argument = command.strip().split()[1]
     if argument:
-        book.delete_record(argument)
+        record = Record(argument)
+        record.delet_phone(argument)
     return argument
 
 
@@ -105,10 +115,10 @@ def main():
             return print("How can I help you?")
         elif command.startswith("add") or command.startswith("change"):
             add_record(command)
-            if parse_command(command):
+            if parse_command(command) and command.startswith("add"):
                 print(
                     f"Контакт {parse_command(command)[1]} з номером {parse_command(command)[2]} збережено")
-            elif parse_command(command):
+            elif parse_command(command) and command.startswith("change"):
                 print(
                     f"Номер телефону для контакту {parse_command(command)[1]} змінено на {parse_command(command)[2]}")
         elif command.startswith("delete"):
