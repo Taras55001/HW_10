@@ -70,6 +70,7 @@ def add_record(command):
         return False
 
 
+@input_error
 def delete(command):
     argument = command.strip().split()[1]
     if argument:
