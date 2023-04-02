@@ -17,6 +17,9 @@ class AddressBook(UserDict):
     def add_record(self, record):
         self.data[record.name.value] = record
 
+    def change_record(self, record):
+        self.data.get()
+
 
 class Name:
     def __init__(self, value):
@@ -28,12 +31,8 @@ class Name:
         return str(self.value)
 
 
-class Phone(Name):
-    pass
-
-
-class Record(UserDict):
-    def __init__(self, name=None, phone=None):
+class Record:
+    def __init__(self, name, phone=None):
         self.name = name
         self.phone = phone
 
@@ -45,49 +44,62 @@ class Field:
 class Phone(Name):
     def __init__(self, value):
         super().__init__(value)
-        self.phones_list = []
 
 
 book = AddressBook()
 
 
 def add_record(command):
-    record = spliting_arguments(command)
-    book.add_record(record)
-
-
-def change_phone(command):
-    atribute = spliting_arguments(command)
-    book.change_record(atribute)
+    if spliting_arguments(command):
+        record = spliting_arguments(command)
+        book.add_record(record)
+    else:
+        return False
 
 
 def parse_command(command):
-    name, phone = command.strip().split()[1], command.strip().split()[2]
-    return name, phone
+    try:
+        name = command.strip().split()[1]
+        phone = command.strip().split()[2]
+        return name, phone
+    except IndexError:
+        print("Не вказані дані контакту")
 
 
 def spliting_arguments(command):
-    arg1, arg2 = parse_command(command)
-    name = Name(arg1)
-    phone = Phone(arg2)
-    return Record(name, phone)
+    try:
+        arg1, arg2 = parse_command(command)
+        name = Name(arg1)
+        phone = Phone(arg2)
+        return Record(name, phone)
+    except TypeError:
+        return False
 
 
 def main():
 
     while True:
 
-        command = input(input_line)
-        if command.startswith("add"):
+        command = input(input_line).lower()
+        if not command:
+            print("Невідома команда")
+        elif command.startswith("hello"):
+            return print("How can I help you?")
+        elif spliting_arguments(command) and command.startswith("add") or command.startswith("change"):
             add_record(command)
-        elif command.startswith("change"):
-            pass
-        elif command.split()[0] == 'show':
+            if command.startswith("add"):
+                print(
+                    f"Контакт {parse_command(command)[0]} з номером {parse_command(command)[1]} збережено")
+            else:
+                print(
+                    f"Номер телефону для контакту {parse_command(command)[0]} змінено на {parse_command(command)[1]}")
+        elif command.startswith("show"):
             for n in book.data:
                 print(str(n), book.data[n].phone)
+        elif command.startswith("help"):
+            print(command_list)
 
-            pass
-        elif command.split()[0] in ['good', 'bye', 'close', 'exit']:
+        elif command.split()[0] in ["good", "bye", "close", "exit"]:
             print("Good bye!")
             break
 
