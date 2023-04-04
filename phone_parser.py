@@ -87,7 +87,8 @@ def iter_phones(name):
 @input_error
 def add_record(command):
     if len(parse_command(command)) >= 3:
-        record = spliting_arguments(command)
+        name, phone = spliting_arguments(command)
+        record = Record(name, phone)
         return record.add_phone()
     else:
         return False
@@ -111,7 +112,7 @@ def spliting_arguments(command):
     key, arg1, arg2 = parse_command(command)
     name = Name(arg1)
     phone = Phone(arg2)
-    return Record(name, phone)
+    return name, phone
 
 
 def main():
