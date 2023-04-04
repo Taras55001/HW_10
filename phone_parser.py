@@ -1,6 +1,5 @@
 from collections import UserDict
 
-contacts_list = {"test": [12345], "test2": [12345,]}
 command_list = "'add' - додає новий контакт\n"\
     "'change' - змінює контакт\n"\
     "'delete' - видаляє конакт за ім'ям\n"\
@@ -9,13 +8,13 @@ command_list = "'add' - додає новий контакт\n"\
 input_line = "-" * 50 + "\n"\
     "Введіть команду \n"\
     "(example: 'add name phone_number')\n"\
-    "Щоб відобразии список команд введіть 'help': "
+    "Щоб відобразити список команд введіть 'help': "
 
 
 class AddressBook(UserDict):
 
     def add_record(self, record):
-        self.data[record.name.value] = record
+        self.data[record.name.value] = record.phones
 
     def delete_record(self, name):
         self.data.pop(name)
@@ -39,20 +38,28 @@ class Record:
     def __init__(self, name, phone=None):
         self.name = name
         self.phone = phone
+        self.phones = []
 
-    def add_phone(self, record):
-        self.addphone = book.add_record(record)
+    def add_phone(self):
+        if self.phone not in self.phones:
+            self.phones.append(self.phone)
+        book.add_record(self)
 
-    def change_phone(self, record):
-        self.addphone = book.add_record(record)
+    def change_phone(self, new_phone):
+        if self.phone in self.phones:
+            self.phones.remove(self.phone)
+            self.phones.append(new_phone)
 
-    def delet_phone(self, record):
-        self.deletphone = book.delete_record(record)
+    def delet_phone(self):
+        self.phones.remove(self.phone)
 
 
-class Phone(Name):
+class Phone(Field):
     def __init__(self, value):
-        super().__init__(value)
+        self.value = value
+
+    def __str__(self) -> str:
+        return str(self.value)
 
 
 book = AddressBook()
@@ -66,15 +73,22 @@ def input_error(func):
             print("Контакт не знайдено")
         except ValueError:
             print("Номер телефону повинен містити тільки цифри")
-        except IndexError:
+        except TypeError:
             print("Недостатньо аргументів")
     return wrapper
 
 
+def iter_phones(name):
+    for n, p in book.data.items():
+        if n == name:
+            return ', '.join(p.phone.value)
+
+
+@input_error
 def add_record(command):
-    if spliting_arguments(command):
+    if len(parse_command(command)) >= 3:
         record = spliting_arguments(command)
-        record.add_phone(record)
+        return record.add_phone()
     else:
         return False
 
@@ -83,8 +97,7 @@ def add_record(command):
 def delete(command):
     argument = command.strip().split()[1]
     if argument:
-        record = Record(argument)
-        record.delet_phone(argument)
+        book.delete_record(argument)
     return argument
 
 
@@ -95,13 +108,10 @@ def parse_command(command):
 
 
 def spliting_arguments(command):
-    try:
-        key, arg1, arg2 = parse_command(command)
-        name = Name(arg1)
-        phone = Phone(arg2)
-        return Record(name, phone)
-    except TypeError:
-        return False
+    key, arg1, arg2 = parse_command(command)
+    name = Name(arg1)
+    phone = Phone(arg2)
+    return Record(name, phone)
 
 
 def main():
@@ -112,7 +122,7 @@ def main():
         if not command:
             print("Невідома команда")
         elif command.startswith("hello"):
-            return print("How can I help you?")
+            print("How can I help you?")
         elif command.startswith("add") or command.startswith("change"):
             add_record(command)
             if parse_command(command) and command.startswith("add"):
@@ -124,8 +134,8 @@ def main():
         elif command.startswith("delete"):
             print(f"конакт за ім'ям {delete(command)} видалений")
         elif command.startswith("show"):
-            for n in book.data:
-                print(str(n), book.data[n].phone)
+            print('\n'.join([f'{name}: {", ".join(phone.value for phone in phones)}'
+                             for name, phones in book.data.items()]))
         elif command.startswith("help"):
             print(command_list)
 
