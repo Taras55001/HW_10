@@ -87,7 +87,7 @@ def input_error(func):
     return wrapper
 
 
-def iter_book():
+def iter_book(command):
     content = '\n'.join(
         [f'{name}: {", ".join(phone.value for phone in phones)}'for name, phones in book.data.items()])
     return content
@@ -123,18 +123,35 @@ def delete(command):
         return book.delete_record(argument)
 
 
+def get_func(command):
+    arg_list = command.strip().split()
+    for key in command_dict.keys():
+        if arg_list[0].lower() == 'hello':
+            return command_dict[key]
+        elif arg_list[0].lower() == key:
+            func = command_dict.get(key)
+            return func(command)
+        elif arg_list[0].lower() in key:
+            return command_dict[key]
+    raise KeyError("This command doesn't exist")
+
+
+command_dict = {"hello": "How can I help you?", "add": add_record, "change": change_record, "delete": delete,
+                "show": iter_book, ("good", "bye", "close", "exit"): "Good bye!"}
+
+
 def main():
 
     while True:
 
         command = input(input_line).lower()
-        print("How can I help you?") if command.startswith("hello") else None
-        print(add_record(command)) if command.startswith("add") else None
-        print(change_record(command)) if command.startswith("change") else None
-        print(delete(command)) if command.startswith("delete") else None
-        print(iter_book()) if command.startswith("show") else None
+        try:
+            func = get_func(command)
+        except KeyError as eror:
+            print(eror)
+            continue
+        print(func)
         if command.split()[0] in ["good", "bye", "close", "exit"]:
-            print("Good bye!")
             break
 
 
