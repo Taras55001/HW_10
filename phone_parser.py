@@ -15,6 +15,7 @@ class AddressBook(UserDict):
 
     def add_record(self, record):
         self.data[record.name.value] = record.phones
+        return f'Contact {record.name.value} create successful'
 
     def delete_record(self, name):
         self.data.pop(name)
@@ -37,21 +38,26 @@ class Name(Field):
 class Record:
     def __init__(self, name, phone=None):
         self.name = name
-        self.phone = phone
-        self.phones = []
+        # self.phone = phone
+        self.phones = [phone] if phone else []
 
-    def add_phone(self):
-        if self.phone not in self.phones:
-            self.phones.append(self.phone)
-        book.add_record(self)
+    def add_phone(self, phone):
+        # if self.phone not in self.phones:
+        self.phones.append(self.phone)
+        # book.add_record(self)
 
-    def change_phone(self, new_phone):
-        if self.phone in self.phones:
-            self.phones.remove(self.phone)
-            self.phones.append(new_phone)
+    def change_phone(self, old_phone, new_phone):
+        # if self.phone in self.phones:
+        for i, p in enumerate(self.phones):
+            if p.value == old_phone.value:
+                self.phones[i] = new_phone
+                return f'Phone {old_phone} change to {new_phone}'
+        return f'No phone {old_phone}'
+        # self.phones.remove(self.phone)
+        # self.phones.append(new_phone)
 
-    def delet_phone(self):
-        self.phones.remove(self.phone)
+    def delet_phone(self, phone):
+        self.phones.remove(phone)
 
 
 class Phone(Field):
@@ -88,10 +94,13 @@ def iter_phones(name):
 def add_record(command):
     if len(parse_command(command)) >= 3:
         name, phone = spliting_arguments(command)
-        record = Record(name, phone)
-        return record.add_phone()
-    else:
-        return False
+        rec = book.get(name)
+        if rec:
+            result = rec.add_phone(Phone(phone))
+            return result
+        rec = Record(Name(name), Phone(phone))
+        result = book.add_record(rec)
+        return result
 
 
 @input_error
