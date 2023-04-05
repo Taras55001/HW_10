@@ -11,6 +11,7 @@ class AddressBook(UserDict):
     def add_record(self, record):
         self.data[record.name.value] = record.phones
         return f'Contact {record.name.value} create successful'
+<<<<<<< HEAD
 
     def add_phone(self, name, phone):
         for p in self.data.get(name):
@@ -24,6 +25,8 @@ class AddressBook(UserDict):
             if phone.value == p.value:
                 self.data[name].remove(p)
         self.data[name].append(new_phone)
+=======
+>>>>>>> 7ab74669277192c3bbc393da7eb715012ea845a3
 
     def delete_record(self, name):
         self.data.pop(name)
@@ -47,6 +50,7 @@ class Name(Field):
 class Record:
     def __init__(self, name, phone=None):
         self.name = name
+<<<<<<< HEAD
         self.phones = [phone] if phone else []
 
     def add_phone(self, phone):
@@ -58,6 +62,25 @@ class Record:
                 book.change_phone(self.name.value, old_phone, new_phone)
                 return f'Phone {old_phone} change to {new_phone}'
         return f'No phone {old_phone}'
+=======
+        # self.phone = phone
+        self.phones = [phone] if phone else []
+
+    def add_phone(self, phone):
+        # if self.phone not in self.phones:
+        self.phones.append(self.phone)
+        # book.add_record(self)
+
+    def change_phone(self, old_phone, new_phone):
+        # if self.phone in self.phones:
+        for i, p in enumerate(self.phones):
+            if p.value == old_phone.value:
+                self.phones[i] = new_phone
+                return f'Phone {old_phone} change to {new_phone}'
+        return f'No phone {old_phone}'
+        # self.phones.remove(self.phone)
+        # self.phones.append(new_phone)
+>>>>>>> 7ab74669277192c3bbc393da7eb715012ea845a3
 
     def delet_phone(self, phone):
         self.phones.remove(phone)
@@ -95,6 +118,7 @@ def iter_book():
 
 @input_error
 def add_record(command):
+<<<<<<< HEAD
     spliting_arguments = command.strip().split()
     if len(spliting_arguments) == 3:
         key, name, phone = spliting_arguments
@@ -114,6 +138,17 @@ def change_record(command):
         key, name, phone, new_phone = arguments
         record = Record(Name(name))
         return record.change_phone(Phone(phone), Phone(new_phone))
+=======
+    if len(parse_command(command)) >= 3:
+        name, phone = spliting_arguments(command)
+        rec = book.get(name)
+        if rec:
+            result = rec.add_phone(Phone(phone))
+            return result
+        rec = Record(Name(name), Phone(phone))
+        result = book.add_record(rec)
+        return result
+>>>>>>> 7ab74669277192c3bbc393da7eb715012ea845a3
 
 
 @input_error
