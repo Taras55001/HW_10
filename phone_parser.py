@@ -1,23 +1,33 @@
 from collections import UserDict
 
-command_list = "'add' - додає новий контакт\n"\
-    "'change' - змінює контакт\n"\
-    "'delete' - видаляє конакт за ім'ям\n"\
-    "'show' - показує список конактів\n"\
-    "'good', 'bye', 'close', 'exit' - вихід з бота"
+
 input_line = "-" * 50 + "\n"\
-    "Введіть команду \n"\
-    "(example: 'add name phone_number')\n"\
-    "Щоб відобразити список команд введіть 'help': "
+    "Input command \n"\
+    "(example: 'add name phone_number')"
 
 
 class AddressBook(UserDict):
 
     def add_record(self, record):
         self.data[record.name.value] = record.phones
+        return f'Contact {record.name.value} create successful'
+
+    def add_phone(self, name, phone):
+        for p in self.data.get(name):
+            if phone.value != p.value:
+                self.data[name].append(phone)
+                return f'Phone {phone} added to contact {name} numbers'
+            return f'Contact {name} whith phone {phone} are alredy exist'
+
+    def change_phone(self, name, phone, new_phone):
+        for p in self.data.get(name):
+            if phone.value == p.value:
+                self.data[name].remove(p)
+        self.data[name].append(new_phone)
 
     def delete_record(self, name):
         self.data.pop(name)
+        return f'Contact {name} deleted successful'
 
 
 class Field:
@@ -37,21 +47,20 @@ class Name(Field):
 class Record:
     def __init__(self, name, phone=None):
         self.name = name
-        self.phone = phone
-        self.phones = []
+        self.phones = [phone] if phone else []
 
-    def add_phone(self):
-        if self.phone not in self.phones:
-            self.phones.append(self.phone)
-        book.add_record(self)
+    def add_phone(self, phone):
+        self.phones.append(self.phone)
 
-    def change_phone(self, new_phone):
-        if self.phone in self.phones:
-            self.phones.remove(self.phone)
-            self.phones.append(new_phone)
+    def change_phone(self, old_phone, new_phone):
+        for p in book.data[self.name.value]:
+            if p.value == old_phone.value:
+                book.change_phone(self.name.value, old_phone, new_phone)
+                return f'Phone {old_phone} change to {new_phone}'
+        return f'No phone {old_phone}'
 
-    def delet_phone(self):
-        self.phones.remove(self.phone)
+    def delet_phone(self, phone):
+        self.phones.remove(phone)
 
 
 class Phone(Field):
@@ -78,41 +87,40 @@ def input_error(func):
     return wrapper
 
 
-def iter_phones(name):
-    for n, p in book.data.items():
-        if n == name:
-            return ', '.join(p.phone.value)
+def iter_book():
+    content = '\n'.join(
+        [f'{name}: {", ".join(phone.value for phone in phones)}'for name, phones in book.data.items()])
+    return content
 
 
 @input_error
 def add_record(command):
-    if len(parse_command(command)) >= 3:
-        name, phone = spliting_arguments(command)
-        record = Record(name, phone)
-        return record.add_phone()
-    else:
-        return False
+    spliting_arguments = command.strip().split()
+    if len(spliting_arguments) == 3:
+        key, name, phone = spliting_arguments
+        rec = book.get(name)
+        if rec:
+            rec = book.add_phone(name, Phone(phone))
+            return rec
+        rec = Record(Name(name), Phone(phone))
+        result = book.add_record(rec)
+        return result
+
+
+@input_error
+def change_record(command):
+    arguments = command.strip().split()
+    if len(arguments) == 4:
+        key, name, phone, new_phone = arguments
+        record = Record(Name(name))
+        return record.change_phone(Phone(phone), Phone(new_phone))
 
 
 @input_error
 def delete(command):
     argument = command.strip().split()[1]
     if argument:
-        book.delete_record(argument)
-    return argument
-
-
-@input_error
-def parse_command(command):
-    key, name, phone = command.strip().split()
-    return key, name, phone
-
-
-def spliting_arguments(command):
-    key, arg1, arg2 = parse_command(command)
-    name = Name(arg1)
-    phone = Phone(arg2)
-    return name, phone
+        return book.delete_record(argument)
 
 
 def main():
@@ -120,27 +128,12 @@ def main():
     while True:
 
         command = input(input_line).lower()
-        if not command:
-            print("Невідома команда")
-        elif command.startswith("hello"):
-            print("How can I help you?")
-        elif command.startswith("add") or command.startswith("change"):
-            add_record(command)
-            if parse_command(command) and command.startswith("add"):
-                print(
-                    f"Контакт {parse_command(command)[1]} з номером {parse_command(command)[2]} збережено")
-            elif parse_command(command) and command.startswith("change"):
-                print(
-                    f"Номер телефону для контакту {parse_command(command)[1]} змінено на {parse_command(command)[2]}")
-        elif command.startswith("delete"):
-            print(f"конакт за ім'ям {delete(command)} видалений")
-        elif command.startswith("show"):
-            print('\n'.join([f'{name}: {", ".join(phone.value for phone in phones)}'
-                             for name, phones in book.data.items()]))
-        elif command.startswith("help"):
-            print(command_list)
-
-        elif command.split()[0] in ["good", "bye", "close", "exit"]:
+        print("How can I help you?") if command.startswith("hello") else None
+        print(add_record(command)) if command.startswith("add") else None
+        print(change_record(command)) if command.startswith("change") else None
+        print(delete(command)) if command.startswith("delete") else None
+        print(iter_book()) if command.startswith("show") else None
+        if command.split()[0] in ["good", "bye", "close", "exit"]:
             print("Good bye!")
             break
 
