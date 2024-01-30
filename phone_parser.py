@@ -7,7 +7,6 @@ input_line = "-" * 50 + "\n"\
 
 
 class AddressBook(UserDict):
-
     def add_record(self, record):
         self.data[record.name.value] = record.phones
         return f'Contact {record.name.value} create successful'
@@ -141,9 +140,7 @@ command_dict = {"hello": "How can I help you?", "add": add_record, "change": cha
 
 
 def main():
-
     while True:
-
         command = input(input_line).lower()
         try:
             func = get_func(command)
